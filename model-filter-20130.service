@@ -1,0 +1,15 @@
+[Unit]
+Description=M137 model-filter proxy (truoc 9router)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /poki/tools/model-filter/proxy.py --port 20130 --upstream http://127.0.0.1:20127
+Restart=on-failure
+RestartSec=3
+User=root
+StandardOutput=append:/tmp/model-filter-proxy.log
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target
