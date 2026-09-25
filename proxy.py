@@ -214,14 +214,35 @@ class Handler(BaseHTTPRequestHandler):
                     return
 
         # Forward nguyen ven sang upstream, pipe ve.
+        # API chat (is_chat): strip encoding de doc body (9router khong nen gzip
+        # JSON chat; giu Accept-Encoding goc chi gay double-gzip o dashboard).
+        # Non-chat (dashboard/assets): pass-through TUYET DOI — giu nguyen
+        # moi header + bytes, khong strip content-encoding/content-length.
         fwd_headers = {k: v for k, v in self.headers.items()
                        if k.lower() not in HOP_HEADERS}
+        pass_through = not is_chat
+        if not pass_through:
+            fwd_headers = {k: v for k, v in fwd_headers.items()
+                           if k.lower() not in ("accept-encoding", "content-encoding",
+                                                "content-length", "transfer-encoding")}
         try:
             conn = http.client.HTTPConnection(up.hostname, up.port or 80,
                                               timeout=FORWARD_TIMEOUT)
             conn.request(self.command, path_qs, body=raw, headers=fwd_headers)
             resp = conn.getresponse()
-            if stream and is_chat:
+            if pass_through:
+                # Dashboard/static: pipe status + headers + bytes y nguyen.
+                data = resp.read()
+                self.send_response(resp.status, resp.reason)
+                for k, v in resp.getheaders():
+                    if k.lower() not in ("connection", "transfer-encoding",
+                                         "keep-alive", "upgrade"):
+                        self.send_header(k, v)
+                self.send_header("Connection", "close")
+                self.end_headers()
+                if data:
+                    self.wfile.write(data)
+            elif stream and is_chat:
                 # Relay chunk real-time (chunked).
                 self.send_response(resp.status, resp.reason)
                 for k, v in resp.getheaders():
