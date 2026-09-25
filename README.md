@@ -128,6 +128,7 @@ docker logs model-filter | tail -2
 | `docker logs model-filter` báo `listening 127.0.0.1:...` trong container | Quên `--host 0.0.0.0`: default bind loopback nên container khác không gọi được | Thêm `"--host", "0.0.0.0"` vào command (mục 2) rồi `docker compose up -d model-filter` |
 | Caddy `bad gateway` tới filter | Filter thiếu chung docker network với Caddy | `docker inspect` cả hai, networks phải giao nhau (ở đây `root_poki-net`); sửa compose rồi up lại |
 | Upstream `muse-spark` non-stream trả `content:""` / stream thiếu `[DONE]` | Provider/pool 9router phía Muse, KHÔNG phải lỗi filter (đã đối chiếu gọi thẳng 9router bypass filter, byte-identical) | Không sửa filter; kiểm tra providerNode/pool 9router |
+| Dashboard/UI 9router hiện rác (mojibake, binary) | Filter strip `content-encoding` cả trang dashboard, trình duyệt nhận gzip mà tưởng text | Đã fix: non-chat pass-through tuyệt đối giữ nguyên headers + bytes. Gặp UI rác thì kiểm tra commit này đã deploy chưa |
 
 ## File trong repo
 
