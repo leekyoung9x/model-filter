@@ -171,9 +171,12 @@ class Handler(BaseHTTPRequestHandler):
         up = urlsplit(UPSTREAM)
         path_qs = self.path
         path = urlsplit(path_qs).path
+        # new-api goi path nhan doi /v1/v1/chat/completions, hoac /responses —
+        # nhan moi path ket thuc bang chat/completions hay responses.
+        is_chat = path.endswith(("/chat/completions", "/responses"))
         model, stream, matched, in_scope = "-", False, None, False
 
-        if path == "/v1/chat/completions" and raw:
+        if is_chat and raw:
             try:
                 body = json.loads(raw.decode("utf-8"))
             except Exception:
@@ -218,7 +221,7 @@ class Handler(BaseHTTPRequestHandler):
                                               timeout=FORWARD_TIMEOUT)
             conn.request(self.command, path_qs, body=raw, headers=fwd_headers)
             resp = conn.getresponse()
-            if stream and path == "/v1/chat/completions":
+            if stream and is_chat:
                 # Relay chunk real-time (chunked).
                 self.send_response(resp.status, resp.reason)
                 for k, v in resp.getheaders():
