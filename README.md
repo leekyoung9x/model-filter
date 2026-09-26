@@ -129,6 +129,7 @@ docker logs model-filter | tail -2
 | Caddy `bad gateway` tới filter | Filter thiếu chung docker network với Caddy | `docker inspect` cả hai, networks phải giao nhau (ở đây `root_poki-net`); sửa compose rồi up lại |
 | Upstream `muse-spark` non-stream trả `content:""` / stream thiếu `[DONE]` | Provider/pool 9router phía Muse, KHÔNG phải lỗi filter (đã đối chiếu gọi thẳng 9router bypass filter, byte-identical) | Không sửa filter; kiểm tra providerNode/pool 9router |
 | Dashboard/UI 9router hiện rác (mojibake, binary) | Filter strip `content-encoding` cả trang dashboard, trình duyệt nhận gzip mà tưởng text | Đã fix: non-chat pass-through tuyệt đối giữ nguyên headers + bytes. Gặp UI rác thì kiểm tra commit này đã deploy chưa |
+| Hỏi gì cũng chặn (`hi`/`alo` cũng ăn CANNED, log `matched=openai`) | Filter quét cả `system` prompt của bot, mà system có chữ kiểu `openai-compatible` nên câu nào cũng dính | Đã fix: chỉ quét `role: user` + `prompt` legacy, bỏ qua system. Test: system có chữ openai mà `hi` vẫn lọt, câu dò vẫn chặn |
 
 ## File trong repo
 
