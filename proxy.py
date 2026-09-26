@@ -71,14 +71,16 @@ def match_keyword(text):
 
 
 def extract_user_text(body):
-    """Gom text nguoi dung tu messages[] (role user/system) + prompt legacy."""
+    """Chi gom text cua role 'user' + prompt legacy. KHONG quet system prompt:
+    system la cua operator (bot Hermes...) chua tu nhu 'openai-compatible'
+    gay chan nham moi cau (bug 2026-09-26: 'hi'/'alo' bi matched=openai)."""
     parts = []
     try:
         msgs = body.get("messages") or []
         for m in msgs:
             if not isinstance(m, dict):
                 continue
-            if m.get("role") not in ("user", "system"):
+            if m.get("role") != "user":
                 continue
             c = m.get("content")
             if isinstance(c, str):
